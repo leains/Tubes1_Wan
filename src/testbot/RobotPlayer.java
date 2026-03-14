@@ -131,8 +131,9 @@ public class RobotPlayer {
     public static void runTower(RobotController rc) throws GameActionException{
 		if (isSaving == true) {
 			rc.setIndicatorDot(rc.getLocation(), 0, 255, 0);
+			rc.setIndicatorString("Saving for " + savingTimeout + " turns");
 			savingTimeout++;
-			if (savingTimeout > 100) {
+			if (savingTimeout > 50) {
 				savingTimeout = 0;
 				isSaving = false;
 			}
@@ -174,7 +175,7 @@ public class RobotPlayer {
         // Read incoming messages
         Message[] messages = rc.readMessages(-1);
         for (Message m : messages) {
-            System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
+            //System.out.println("Tower received message: '#" + m.getSenderID() + " " + m.getBytes());
 			
 			if (m.getBytes() == 0) {
 				isSaving = true;
@@ -182,6 +183,19 @@ public class RobotPlayer {
         }
 
         // TODO: can we attack other bots?
+		RobotInfo[] enemyRobots = rc.senseNearbyRobots(-1, rc.getTeam().opponent());
+		MapLocation target = null;
+		int maxHealth = 999;
+		for (RobotInfo enemy : enemyRobots) {
+			if (rc.canAttack(enemy.getLocation()) && enemy.getHealth() < maxHealth) {
+				maxHealth = enemy.getHealth();
+				target = enemy.getLocation();
+			}
+		}
+		if (target != null) {
+			rc.attack(target);
+			rc.attack(null);
+		}
     }
 
 
@@ -205,6 +219,9 @@ public class RobotPlayer {
             }
         }
         if (curRuin != null){
+			if (curBuild == -1) {
+				curBuild = rng.nextInt(2);
+			}
             MapLocation targetLoc = curRuin.getMapLocation();
             Direction dir = rc.getLocation().directionTo(targetLoc);
 			if (!rc.canCompleteTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)) {
@@ -220,9 +237,13 @@ public class RobotPlayer {
 			}
             // Mark the pattern we need to draw to build a tower here if we haven't already.
             MapLocation shouldBeMarked = curRuin.getMapLocation().subtract(dir);
-            if (rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
+            if (curBuild == 0 && rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc)){
                 rc.markTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
-                System.out.println("Trying to build a tower at " + targetLoc);
+                System.out.println("Trying to build a paint tower at " + targetLoc);
+            }
+			if (curBuild == 1 && rc.senseMapInfo(shouldBeMarked).getMark() == PaintType.EMPTY && rc.canMarkTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc)){
+                rc.markTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc);
+                System.out.println("Trying to build a money tower at " + targetLoc);
             }
             // Fill in any spots in the pattern with the appropriate paint.
             for (MapInfo patternTile : rc.senseNearbyMapInfos(targetLoc, 8)){
@@ -237,6 +258,13 @@ public class RobotPlayer {
                 rc.completeTowerPattern(UnitType.LEVEL_ONE_PAINT_TOWER, targetLoc);
                 rc.setTimelineMarker("Tower built", 0, 255, 0);
                 System.out.println("Built a tower at " + targetLoc + "!");
+				curBuild = -1;
+            }
+			if (rc.canCompleteTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc)){
+                rc.completeTowerPattern(UnitType.LEVEL_ONE_MONEY_TOWER, targetLoc);
+                rc.setTimelineMarker("Tower built", 0, 255, 0);
+                System.out.println("Built a tower at " + targetLoc + "!");
+				curBuild = -1;
             }
         }
 
@@ -299,7 +327,7 @@ public class RobotPlayer {
      */
     public static void runMopper(RobotController rc) throws GameActionException{
 		if (isMessenger == true) {
-			rc.setIndicatorString("ktlidx: " + ktLIdx);
+			rc.setIndicatorString("ktlidx: " + ktLIdx + " savingTimeout: " + savingTimeout);
 			if (isSaving == true) {
 				rc.setIndicatorDot(rc.getLocation(), 255, 155 + savingTimeout, 0);
 			} else {
@@ -322,19 +350,40 @@ public class RobotPlayer {
 			}
 		}
 		
-        // Move and attack randomly.
-        Direction dir = directions[rng.nextInt(directions.length)];
-        MapLocation nextLoc = rc.getLocation().add(dir);
-        if (rc.canMove(dir)){
-            rc.move(dir);
-        }
-        // if (rc.canMopSwing(dir)){
-            // rc.mopSwing(dir);
-            // System.out.println("Mop Swing! Booyah!");
-        // }
-        else if (rc.canAttack(nextLoc)){
-            rc.attack(nextLoc);
-        }
+        // Move and attack
+		MapInfo[] nearbyTiles = rc.senseNearbyMapInfos();
+		int minDist = 9999999;
+		MapInfo curTile = null;
+		for (MapInfo tile : nearbyTiles) {
+			if (tile.getPaint().isEnemy()) {
+				int dist = tile.getMapLocation().distanceSquaredTo(rc.getLocation());
+				if (dist < minDist) {
+					curTile = tile;
+					minDist = dist;
+				}
+			}
+		}
+		Direction dir = null;
+		if (curTile != null) {
+			rc.setIndicatorDot(curTile.getMapLocation(), 255, 0, 255);
+			dir = rc.getLocation().directionTo(curTile.getMapLocation());
+			if (rc.canMove(dir)){
+				rc.move(dir);
+			} else if (rc.canMove(dir.rotateLeft().rotateLeft())) {
+				rc.move(dir.rotateLeft().rotateLeft());
+			}
+			MapLocation nextLoc = rc.getLocation().add(dir);
+        
+			if (rc.canAttack(nextLoc) && nextLoc.equals(curTile.getMapLocation())){
+				rc.attack(nextLoc);
+			}
+		} else {
+			dir = directions[rng.nextInt(directions.length)];
+			if (rc.canMove(dir)){
+				rc.move(dir);
+			}
+		}
+        
         // We can also move our code into different methods or classes to better organize it!
         if (isMessenger == true) {
 			updateAllyTowers(rc);
@@ -405,6 +454,14 @@ public class RobotPlayer {
 			MapLocation mark = tile.getMapLocation().add(dir);
 			if (!rc.senseMapInfo(mark).getMark().isAlly()) continue;
             
+			boolean f = false;
+			for (MapInfo tile2 : nearbyTiles) {
+				if (Math.abs(tile2.getMapLocation().x - tile.getMapLocation().x) <= 2 && Math.abs(tile2.getMapLocation().y - tile.getMapLocation().y) <= 2 && tile2.getPaint().isEnemy()) {
+					f = true;
+					break;
+				}
+			}
+			if (f == true) continue;
 			isSaving = true;
 			return;
         }
