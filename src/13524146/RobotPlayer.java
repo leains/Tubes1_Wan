@@ -60,7 +60,6 @@ public class RobotPlayer {
     }
 
     public static void runTower(RobotController rc) throws GameActionException{
-        // Variable
         // 1. Sense
         RobotInfo[] enemy = rc.senseNearbyRobots(-1,rc.getTeam().opponent());
         // 2. Nerima Message
@@ -75,7 +74,7 @@ public class RobotPlayer {
         if (enemy.length>0){
             RobotInfo target = null;
             boolean first = true;
-            int lowest = Integer.MIN_VALUE;
+            int lowest = Integer.MAX_VALUE;
             for (RobotInfo r : enemy){
                 if (first){
                     first = false; lowest = r.getHealth(); target = r;
@@ -117,7 +116,7 @@ public class RobotPlayer {
         // 2. Menerima Pesan sekitar jika ada dan PROSES :)
         Message[] pesan = rc.readMessages(-1);
         for (Message m : pesan){
-            // Algoritma Proses [OPSIONAL]
+            // Seakan-akan ada pesan. (Algoritma Proses Pesan Tidak Dibuat)
         }
 
         // 3. Cek Kondisi
@@ -180,7 +179,7 @@ public class RobotPlayer {
         // 2. Menerima Pesan sekitar jika ada dan PROSES :)
         Message[] pesan = rc.readMessages(-1);
         for (Message m : pesan){
-            // Algoritma Proses [OPSIONAL]
+            // Seakan-akan ada pesan. (Algoritma Proses Pesan Tidak Dibuat)
         }
 
         // 3. Cek Kondisi
@@ -262,7 +261,7 @@ public class RobotPlayer {
         // 2. Menerima Pesan sekitar jika ada dan PROSES :)
         Message[] pesan = rc.readMessages(-1);
         for (Message m : pesan){
-            // Algoritma Proses [OPSIONAL]
+            // Seakan-akan ada pesan. (Algoritma Proses Pesan Tidak Dibuat)
         }
 
         // 3. Cek Kondisi 
@@ -307,8 +306,8 @@ public class RobotPlayer {
         float splasherRatio = total == 0 ? 0f : (float) splasherCount / total;
 
         float soldierDelta  = 0.60f - soldierRatio;
-        float mopperDelta   = 0.25f - mopperRatio;
-        float splasherDelta = 0.15f - splasherRatio;
+        float mopperDelta   = 0.30f - mopperRatio;
+        float splasherDelta = 0.10f - splasherRatio;
 
         // STRATEGI : SPAWN YANG DELTA-NYA PALING BESAR
         UnitType spawn = null;
@@ -398,7 +397,7 @@ public class RobotPlayer {
         int chips = rc.getMoney();
         int towerCount = rc.getNumberTowers();
         if (chips>5000 && towerCount>4) tower = UnitType.LEVEL_ONE_DEFENSE_TOWER; // Syarat : Kaya
-        if (towerCount%2==0) tower = UnitType.LEVEL_ONE_PAINT_TOWER;
+        else if (towerCount%2==0) tower = UnitType.LEVEL_ONE_PAINT_TOWER;
         else tower = UnitType.LEVEL_ONE_MONEY_TOWER;
 
         // Bangun Tower
@@ -438,7 +437,7 @@ public class RobotPlayer {
     static MapLocation bestSplash(RobotController rc, MapInfo[] nearby, RobotInfo[] enemy) throws GameActionException{
         MapLocation cur      = rc.getLocation();
         MapLocation best     = null;
-        int         bestScore = 5; // minimum threshold
+        int bestScore = 5; // minimum threshold
  
         for (MapInfo centerTile : nearby) {
             if (!centerTile.isPassable()) continue;
@@ -451,12 +450,12 @@ public class RobotPlayer {
                 if (dist > 4) continue;
                 PaintType paint = t.getPaint();
                 if (dist <= 2) {
-                    if (paint.isEnemy())                score += 12;
-                    else if (paint == PaintType.EMPTY)  score += 8;
-                    else if (paint.isAlly())             score -= 5;
+                    if (paint.isEnemy()) score += 12;
+                    else if (paint == PaintType.EMPTY) score += 8;
+                    else if (paint.isAlly()) score -= 5;
                 } else {
-                    if (paint == PaintType.EMPTY)        score += 6;
-                    else if (paint.isAlly())             score -= 2;
+                    if (paint == PaintType.EMPTY) score += 6;
+                    else if (paint.isAlly())  score -= 2;
                 }
             }
             for (RobotInfo e : enemy) {
@@ -506,6 +505,7 @@ public class RobotPlayer {
                 if (first) {
                     best=r.getLocation();
                     bestDist = delta;
+                    first = false;
                 }else{
                     if (delta<bestDist) {
                         bestDist = delta;
