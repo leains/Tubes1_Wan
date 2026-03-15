@@ -1,38 +1,36 @@
-# Battlecode 2025 Scaffold - Java
+# TUBES STIMA 1
+INI Adalah Tugas Besar IF2211 - Mata Kuliah Strategi Algoritma 
+Kelompok Wan 
 
-This is the Battlecode 2025 Java scaffold, containing an `examplefuncsplayer`. Read https://play.battlecode.org/bc25java/quick_start !
+
+## Penjelasan Singkat Algoritma Greedy
+### Bot Utama (13524)
+Dua strategi greedy berbasis ekspansi:
+- **Greedy Tile Terjauh** — Soldier cari tile belum diwarnai yang paling jauh, gerak ke sana. Bertahan di area sampai sebagian besar tile diwarnai sebelum ekspansi
+- **Greedy Chase Musuh** — Mopper kejar tile cat musuh terdekat dan langsung attack. Sebagian Mopper (ID genap) jadi messenger: keliling ke tower sekutu dan kirim sinyal bahaya kalau ada ruin yang terancam. 
+
+### Bot Alternatif 1 (13524146)
+Bot ini mengimplementasikan empat strategi greedy yang bekerja secara bersamaan:
+- **Greedy Move** — tiap robot nilai 8 arah, pilih skor tertinggi berdasarkan tile sekitar 
+- **Greedy Build Tower** — Soldier langsung bangun tower begitu ketemu ruin, tipe ditentukan dari kondisi chips dan jumlah tower saat itu
+- **Greedy Spawn** — Tower spawn tipe robot yang rasionya paling jauh dari target (60% Soldier, 30% Mopper, 10% Splasher)
+- **Greedy Best Splasher** - Menentukan timing waktu dan lokasi untuk melakukan splash yang paling tepat. 
+
+### Bot Alternatif 2 ()
+Strategi greedy berbasis komunikasi terdistribusi:
+- **Greedy Pemilihan Ruin** — Soldier pilih ruin dengan skor `1000/(jarak+1) − 0.5×jarak_ke_tower`, hindari ruin dekat tower musuh (-100)
+- **Greedy Weighted Attack** — Tower serang target dengan skor `1000/(HP+1) + bonus_tipe` (Splasher +500, Mopper +300, tower musuh +100)
+- **Greedy Intel Broadcast** — Begitu temukan tower musuh atau ruin kosong, langsung broadcast ke seluruh tim tanpa menunggu
 
 
-### Project Structure
+## Requirement dan Instalasi
+1. Gradlew 
+(https://docs.gradle.org/current/userguide/installation.html)
+2. JDK Ver.21 
+(https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
 
-- `README.md`
-    This file.
-- `build.gradle`
-    The Gradle build file used to build and run players.
-- `src/`
-    Player source code.
-- `test/`
-    Player test code.
-- `client/`
-    Contains the client. The proper executable can be found in this folder (don't move this!)
-- `build/`
-    Contains compiled player code and other artifacts of the build process. Can be safely ignored.
-- `matches/`
-    The output folder for match files.
-- `maps/`
-    The default folder for custom maps.
-- `gradlew`, `gradlew.bat`
-    The Unix (OS X/Linux) and Windows versions, respectively, of the Gradle wrapper. These are nifty scripts that you can execute in a terminal to run the Gradle build tasks of this project. If you aren't planning to do command line development, these can be safely ignored.
-- `gradle/`
-    Contains files used by the Gradle wrapper scripts. Can be safely ignored.
-
-### How to get started
-
-You are free to directly edit `examplefuncsplayer`.
-However, we recommend you make a new bot by copying `examplefuncsplayer` to a new package under the `src` folder.
-
+## HOW TO START?
 ### Useful Commands
-
 - `./gradlew build`
     Compiles your player
 - `./gradlew run`
@@ -43,11 +41,24 @@ However, we recommend you make a new bot by copying `examplefuncsplayer` to a ne
     Create a submittable zip file
 - `./gradlew tasks`
     See what else you can do!
+### Memulai 
+```bash
+cd STIMA-BATTLE
+```
+```bash
+./gradlew build
+```
+```bash
+cd client
+```
+```bash
+Jalankan Stima Battle Client.exe
+Masukkan dua bot yang akan diadu pada tab runner
+Tekan run
+```
 
 
-### Configuration 
-
-Look at `gradle.properties` for project-wide configuration.
-
-If you are having any problems with the default client, please report to teh devs and
-feel free to set the `compatibilityClient` configuration to `true` to download a different version of the client.
+## Author
+- Ega Luthfi Rais | 13524115
+- Nathanael Shane Bennet | 13524119
+- Leonardus Brain Fatolosja | 13524146
