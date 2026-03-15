@@ -1,4 +1,4 @@
-package better_bot;
+package alternative_bots_2;
 
 /**
  * a hashable version of MapLoaction
