@@ -1,4 +1,4 @@
-package better_bot;
+package alternative_bots_2;
 
 import java.util.Map;
 import static java.util.Map.entry;
